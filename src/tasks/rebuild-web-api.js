@@ -258,6 +258,10 @@ module.exports = function rebuildWebApi(functionName, functionVersion, restApiId
 				},
 				authorizerId = function () {
 					return methodOptions && methodOptions.customAuthorizer && authorizerIds[methodOptions.customAuthorizer];
+				},
+				additionalErrors = function () {
+					return methodOptions && methodOptions.error && Array.isArray(
+							methodOptions.error.additionalErrors) && methodOptions.error.additionalErrors;
 				};
 			return apiGateway.putMethodAsync({
 				authorizationType: authorizationType(),
@@ -269,10 +273,33 @@ module.exports = function rebuildWebApi(functionName, functionVersion, restApiId
 			}).then(function () {
 				return putLambdaIntegration(resourceId, methodName, credentials());
 			}).then(function () {
-				var results = [{code: successCode(), pattern: '', contentType: successContentType(), template: successTemplate(headers('success')), headers: headers('success')}];
+				var results = [{
+					code: successCode(),
+					pattern: '',
+					contentType: successContentType(),
+					template: successTemplate(headers('success')),
+					headers: headers('success')
+				}];
 				if (errorCode() !== successCode()) {
 					results[0].pattern = '^$';
-					results.push({code: errorCode(), pattern: '', contentType: errorContentType(), template: errorTemplate(), headers: headers('error')});
+					results.push({
+						code: errorCode(),
+						pattern: '',
+						contentType: errorContentType(),
+						template: errorTemplate(),
+						headers: headers('error')
+					});
+				}
+				if (additionalErrors()) {
+					additionalErrors().forEach(function (additionalError) {
+						var additionalErrorConfig = additionalError.toConfig();
+						results.push({
+							code: String(additionalErrorConfig.code),
+							pattern: additionalErrorConfig.pattern,
+							template: additionalErrorConfig.template,
+							headers: headers('error')
+						});
+					});
 				}
 				return Promise.map(results, addCodeMapper, {concurrency: 1});
 			});

@@ -54,6 +54,20 @@ module.exports = function validatePackage(dir, functionHandler, restApiModule) {
 						throw routeMessage + 'error template requests custom headers but does not provide defaults';
 					}
 				}
+				if (methodConfig.error && methodConfig.error.additionalErrors) {
+					if (!Array.isArray(methodConfig.error.additionalErrors)) {
+						throw routeMessage + 'error additionalErrors is not an array';
+					}
+					methodConfig.error.additionalErrors.forEach(function (additionalError) {
+						var additionalErrorConfig = additionalError && typeof additionalError === 'function' && additionalError.toConfig();
+						if (typeof additionalError !== 'function') {
+							throw routeMessage + 'error additionalError must be an Error/function';
+						}
+						if (!additionalErrorConfig.code || !additionalErrorConfig.pattern || !additionalErrorConfig.template) {
+							throw routeMessage + 'error additionalErrorConfig must have code, pattern & template';
+						}
+					});
+				}
 				if (methodConfig.customAuthorizer && (!apiConfig.authorizers || !apiConfig.authorizers[methodConfig.customAuthorizer])) {
 					throw routeMessage + 'requests an undefined custom authorizer ' + methodConfig.customAuthorizer;
 				}
@@ -74,7 +88,7 @@ module.exports = function validatePackage(dir, functionHandler, restApiModule) {
 		if (apiConfig.authorizers) {
 			Object.keys(apiConfig.authorizers).forEach(function (authorizerName) {
 				var authorizer = apiConfig.authorizers[authorizerName],
-					authorizerMessage =  apiModulePath + '.js authorizer ' + authorizerName + ' ';
+					authorizerMessage = apiModulePath + '.js authorizer ' + authorizerName + ' ';
 				if (!authorizer.lambdaName && !authorizer.lambdaArn) {
 					throw authorizerMessage + 'requires either lambdaName or lambdaArn';
 				}
