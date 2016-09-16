@@ -54,6 +54,7 @@
     "uuid": "^2.0.1"
   },
   "devDependencies": {
+    "claudia-api-errors": "git://github.com/phips28/claudia-api-errors",
     "dotenv": "^2.0.0",
     "jscs": "^2.9.0",
     "jasmine": "^2.5.2",
