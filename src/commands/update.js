@@ -101,16 +101,13 @@ module.exports = function update(options, optionalLogger) {
   if (!options.source) {
     options.source = shell.pwd();
   }
+  process.env.TMPDIR = '/tmp';
   if (options.source === os.tmpdir()) {
     console.warn({ source: options.source, tmpdir: os.tmpdir() });
-    console.warn({
-      TMPDIR: process.env.TMPDIR,
-      TMP: process.env.TMP,
-      TEMP: process.env.TEMP
-    });
-    return Promise.reject(
-      'Source directory is the Node temp directory. Cowardly refusing to fill up disk with recursive copy.' + JSON.stringify(
-        { source: options.source, tmpdir: os.tmpdir() }));
+    //{ source: '/source/api/build', tmpdir: '/source/api/build' }
+    console.warn({ TMPDIR: process.env.TMPDIR, TMP: process.env.TMP, TEMP: process.env.TEMP });
+    //{ TMPDIR: '/source/api/build', TMP: undefined, TEMP: undefined }
+    return Promise.reject('Source directory is the Node temp directory. Cowardly refusing to fill up disk with recursive copy.');
   }
   if (options['no-optional-dependencies'] && options['use-local-dependencies']) {
     return Promise.reject('incompatible arguments --use-local-dependencies and --no-optional-dependencies');
