@@ -101,7 +101,9 @@ module.exports = function update(options, optionalLogger) {
 		options.source = shell.pwd();
 	}
 	if (options.source === os.tmpdir()) {
-		return Promise.reject('Source directory is the Node temp directory. Cowardly refusing to fill up disk with recursive copy.');
+		console.warn({ source: options.source, tmpdir: os.tmpdir() });
+		return Promise.reject('Source directory is the Node temp directory. Cowardly refusing to fill up disk with recursive copy.' + JSON.stringify(
+				{ source: options.source, tmpdir: os.tmpdir() }));
 	}
 	if (options['no-optional-dependencies'] && options['use-local-dependencies']) {
 		return Promise.reject('incompatible arguments --use-local-dependencies and --no-optional-dependencies');
