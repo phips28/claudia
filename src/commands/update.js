@@ -101,6 +101,7 @@ module.exports = function update(options, optionalLogger) {
   if (!options.source) {
     options.source = shell.pwd();
   }
+  process.env.TMPDIR = '/tmp';
   if (options.source === os.tmpdir()) {
     console.warn({ source: options.source, tmpdir: os.tmpdir() });
     //{ source: '/source/api/build', tmpdir: '/source/api/build' }
