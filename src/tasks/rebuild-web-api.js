@@ -198,7 +198,7 @@ module.exports = function rebuildWebApi(functionName, functionVersion, restApiId
 							{
 								op: 'replace',
 								path: '/' + resourceId + '/OPTIONS/caching/enabled',
-								value: false
+								value: 'false'
 							}
 						]
 					});
@@ -210,7 +210,7 @@ module.exports = function rebuildWebApi(functionName, functionVersion, restApiId
 							{
 								op: 'replace',
 								path: '/' + resourceId + '/OPTIONS/caching/enabled',
-								value: false
+								value: 'false'
 							}
 						]
 					});
