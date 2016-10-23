@@ -64,7 +64,7 @@ describe('update', function () {
 	});
 	it('fails if local dependencies and optional dependencies are mixed', function (done) {
 		shell.cp('-r', 'spec/test-projects/hello-world/*', workingdir);
-		underTest({source: workingdir, 'use-local-dependencies': true, 'no-optional-dependencies': true}).then(done.fail, function (message) {
+		underTest({source: workingdir, 'use-local-dependencies': true, 'optional-dependencies': false}).then(done.fail, function (message) {
 			expect(message).toEqual('incompatible arguments --use-local-dependencies and --no-optional-dependencies');
 			done();
 		});
@@ -98,7 +98,7 @@ describe('update', function () {
 			shell.cp('-rf', 'spec/test-projects/echo-dependency-problem/*', workingdir);
 			underTest({source: workingdir})
 			.then(done.fail, function (reason) {
-				expect(reason).toEqual('cannot require ./main after npm install --production. Check your dependencies.');
+				expect(reason).toEqual('cannot require ./main after clean installation. Check your dependencies.');
 			}).then(function () {
 				return lambda.listVersionsByFunctionPromise({FunctionName: testRunName});
 			}).then(function (result) {
@@ -149,7 +149,7 @@ describe('update', function () {
 		});
 		it('removes optional dependencies after validation if requested', function (done) {
 			shell.cp('-rf', path.join(__dirname, '/test-projects/optional-dependencies/*'), workingdir);
-			underTest({source: workingdir, 'no-optional-dependencies': true}).then(function () {
+			underTest({source: workingdir, 'optional-dependencies': false}).then(function () {
 				return lambda.invokePromise({FunctionName: testRunName});
 			}).then(function (lambdaResult) {
 				expect(lambdaResult.StatusCode).toEqual(200);
@@ -281,7 +281,7 @@ describe('update', function () {
 		it('validates the package before creating a new lambda version', function (done) {
 			shell.cp('-rf', 'spec/test-projects/echo-dependency-problem/*', updateddir);
 			underTest({source: updateddir}).then(done.fail, function (reason) {
-				expect(reason).toEqual('cannot require ./main after npm install --production. Check your dependencies.');
+				expect(reason).toEqual('cannot require ./main after clean installation. Check your dependencies.');
 			}).then(function () {
 				return lambda.listVersionsByFunctionPromise({FunctionName: testRunName});
 			}).then(function (result) {
