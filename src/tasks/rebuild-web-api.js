@@ -189,7 +189,30 @@ module.exports = function rebuildWebApi(functionName, functionVersion, restApiId
 						'application/json': ''
 					},
 					responseParameters: responseParams
-				});
+				}).then(function () {
+					console.log('------');
+					console.log({
+						restApiId: restApiId,
+						stageName: functionVersion,
+						patchOperations: [
+							{
+								op: 'replace',
+								path: '/' + resourceId + '/OPTIONS/caching/enabled',
+								value: false
+							}
+					});
+					console.log('------');
+					return apiGateway.updateStageAsync({
+						restApiId: restApiId,
+						stageName: functionVersion,
+						patchOperations: [
+							{
+								op: 'replace',
+								path: '/' + resourceId + '/OPTIONS/caching/enabled',
+								value: false
+							}
+					});
+			  });
 			});
 		},
 		findResourceByPath = function (path) {
