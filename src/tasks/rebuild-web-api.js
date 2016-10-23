@@ -200,6 +200,7 @@ module.exports = function rebuildWebApi(functionName, functionVersion, restApiId
 								path: '/' + resourceId + '/OPTIONS/caching/enabled',
 								value: false
 							}
+						]
 					});
 					console.log('------');
 					return apiGateway.updateStageAsync({
@@ -211,6 +212,7 @@ module.exports = function rebuildWebApi(functionName, functionVersion, restApiId
 								path: '/' + resourceId + '/OPTIONS/caching/enabled',
 								value: false
 							}
+						]
 					});
 			  });
 			});
