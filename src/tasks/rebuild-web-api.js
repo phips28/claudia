@@ -137,7 +137,7 @@ module.exports = function rebuildWebApi(functionName, functionVersion, restApiId
 				return addMethodResponse();
 			});
 		},
-		createCorsHandler = function (resourceId) {
+		createCorsHandler = function (resourceId, path) {
 			return apiGateway.putMethodAsync({
 				authorizationType: 'NONE',
 				httpMethod: 'OPTIONS',
@@ -189,33 +189,19 @@ module.exports = function rebuildWebApi(functionName, functionVersion, restApiId
 						'application/json': ''
 					},
 					responseParameters: responseParams
-				})
-					// .then(function () {
-					// console.log('------');
-					// console.log({
-					// 	restApiId: restApiId,
-					// 	stageName: functionVersion,
-					// 	patchOperations: [
-					// 		{
-					// 			op: 'replace',
-					// 			path: '/' + resourceId + '/OPTIONS/caching/enabled',
-					// 			value: 'false'
-					// 		}
-					// 	]
-					// });
-					// console.log('------');
-					// return apiGateway.updateStageAsync({
-					// 	restApiId: restApiId,
-					// 	stageName: functionVersion,
-					// 	patchOperations: [
-					// 		{
-					// 			op: 'replace',
-					// 			path: '/' + resourceId + '/OPTIONS/caching/enabled',
-					// 			value: 'false'
-					// 		}
-					// 	]
-					// });
-			  // });
+				}).then(function () {
+					return apiGateway.updateStageAsync({
+						restApiId: restApiId,
+						stageName: functionVersion,
+						patchOperations: [
+							{
+								op: 'replace',
+								path: '/~1' + path.replace(/\//g, '~1') + '/OPTIONS/caching/enabled',
+								value: 'false'
+							}
+						]
+					});
+				});
 			});
 		},
 		findResourceByPath = function (path) {
@@ -248,7 +234,7 @@ module.exports = function rebuildWebApi(functionName, functionVersion, restApiId
 				return Promise.map(supportedMethods, createMethodMapper, {concurrency: 1});
 			}).then(function () {
 				if (supportsCors()) {
-					return createCorsHandler(resourceId);
+					return createCorsHandler(resourceId, path);
 				}
 			});
 		},
