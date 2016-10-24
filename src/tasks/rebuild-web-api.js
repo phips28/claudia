@@ -78,7 +78,7 @@ module.exports = function rebuildWebApi(functionName, functionVersion, restApiId
 			}
 			return '\'' + val + '\'';
 		},
-		createMethod = function (methodName, resourceId, methodOptions) {
+		createMethod = function (methodName, resourceId, methodOptions, path) {
 			var apiKeyRequired = function () {
 					return methodOptions && methodOptions.apiKeyRequired;
 				},
@@ -123,6 +123,32 @@ module.exports = function rebuildWebApi(functionName, functionVersion, restApiId
 				},
 				authorizerId = function () {
 					return methodOptions && methodOptions.customAuthorizer && authorizerIds[methodOptions.customAuthorizer];
+				},
+				disableCache = function () {
+					const patchOperations = [];
+					if (methodOptions && methodOptions.disableCache === true) {
+						patchOperations.push({
+							op: 'replace',
+							path: '/~1' + path.replace(/\//g, '~1') + '/' + methodName + '/caching/enabled',
+							value: 'false'
+						});
+					} else { // remove the custom setting, to inherit from the stage == enable cache
+						patchOperations.push({
+							op: 'remove',
+							path: '/~1' + path.replace(/\//g, '~1') + '/' + methodName,
+						});
+					}
+					return apiGateway.updateStageAsync({
+						restApiId: restApiId,
+						stageName: functionVersion,
+						patchOperations: patchOperations
+					}).catch(function (error) {
+						// ignore this type error:
+						// [BadRequestException: Cannot remove method setting xxx because there is no method setting for this method
+						if (error.message.indexOf('there is no method setting for this method') === -1) {
+							throw error;
+						}
+					});
 				};
 			return apiGateway.putMethodAsync({
 				authorizationType: authorizationType(),
@@ -135,6 +161,8 @@ module.exports = function rebuildWebApi(functionName, functionVersion, restApiId
 				return putLambdaIntegration(resourceId, methodName, credentials());
 			}).then(function () {
 				return addMethodResponse();
+			}).then(function () {
+				return disableCache();
 			});
 		},
 		createCorsHandler = function (resourceId, path) {
@@ -226,7 +254,7 @@ module.exports = function rebuildWebApi(functionName, functionVersion, restApiId
 			var resourceId,
 				supportedMethods = Object.keys(apiConfig.routes[path]),
 				createMethodMapper = function (methodName) {
-					return createMethod(methodName, resourceId, apiConfig.routes[path][methodName]);
+					return createMethod(methodName, resourceId, apiConfig.routes[path][methodName], path);
 				};
 			return findResourceByPath(path).then(function (r) {
 				resourceId = r;
