@@ -8,7 +8,7 @@ module.exports = function cleanUpPackage(packageDir, options, logger) {
 		if (options['optional-dependencies'] === false) {
 			logger.logApiCall('removing optional dependencies');
 			shell.rm('-rf', path.join(packageDir, 'node_modules'));
-			return runNpm(packageDir, 'install --production --no-optional', logger);
+			return runNpm(packageDir, 'install --production --no-optional && modclean -r', logger);
 		} else {
 			return Promise.resolve();
 		}
