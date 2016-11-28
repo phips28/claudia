@@ -50,7 +50,8 @@
     "oh-no-i-insist": "^1.1.1",
     "shelljs": "^0.5.3",
     "tar-fs": "^1.14.0",
-    "uuid": "^2.0.1"
+    "uuid": "^2.0.1",
+    "modclean": "^1.2.7"
   },
   "devDependencies": {
     "dotenv": "^2.0.0",
